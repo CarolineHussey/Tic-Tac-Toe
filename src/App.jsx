@@ -5,6 +5,7 @@ import { useState } from "react";
 import GameOver from "./components/GameOver.jsx";
 import { WINNING_COMBINATIONS } from "./winning-combinations.js";
 
+//CONSTANTS
 const INITIAL_GAME_BOARD = [
   [null, null, null],
   [null, null, null],
@@ -16,6 +17,7 @@ const PLAYERS = {
   O: "Player 2",
 };
 
+//HELPER FUNCTIONS
 function deriveActivePlayer(gameTurns) {
   let currentPlayer = "X";
 
@@ -26,50 +28,56 @@ function deriveActivePlayer(gameTurns) {
   return currentPlayer;
 }
 
-function App() {
-  const [players, setPlayers] = useState(PLAYERS);
+function deriveGameBoard(gameTurns) {
+  let gameBoard = [...INITIAL_GAME_BOARD.map((array) => [...array])];
 
+  //See handleSquareSelection below for structure of gameTurns
+  for (const t of gameTurns) {
+    const { square, player } = t;
+    const { row, col } = square;
+    gameBoard[row][col] = player;
+  }
+  return gameBoard;
+}
+
+//DETERMINE WINNER
+function deriveWinner(gameBoard, players) {
+  let winner;
+
+  for (const combo of WINNING_COMBINATIONS) {
+    //Lookup the symbol that is placed on the game board in a position derived from the winning combinations.
+    const firstSquareSymbol = gameBoard[combo[0].row][combo[0].column];
+    const secondSquareSymbol = gameBoard[combo[1].row][combo[1].column];
+    const thirdSquareSymbol = gameBoard[combo[2].row][combo[2].column];
+
+    //Compare the symbols to check for a winning combination.
+    if (
+      firstSquareSymbol &&
+      firstSquareSymbol === secondSquareSymbol &&
+      firstSquareSymbol === thirdSquareSymbol
+    ) {
+      //we have a winner!
+      winner = [players[firstSquareSymbol]];
+    }
+  }
+
+  return winner;
+}
+
+//APP
+function App() {
+  //STATE
+  const [players, setPlayers] = useState(PLAYERS);
   const [gameTurns, setGameTurns] = useState([]);
 
+  //DERIVED STATE
   const activePlayer = deriveActivePlayer(gameTurns);
-
-  function deriveGameBoard(gameTurns) {
-    let gameBoard = [...INITIAL_GAME_BOARD.map((array) => [...array])];
-
-    for (const t of gameTurns) {
-      const { square, player } = t;
-      const { row, col } = square;
-      gameBoard[row][col] = player;
-    }
-    return gameBoard;
-  }
-
   const gameBoard = deriveGameBoard(gameTurns);
-
-  function deriveWinner(gameBoard, players) {
-    let winner;
-
-    for (const combo of WINNING_COMBINATIONS) {
-      const firstSquareSymbol = gameBoard[combo[0].row][combo[0].column];
-      const secondSquareSymbol = gameBoard[combo[1].row][combo[1].column];
-      const thirdSquareSymbol = gameBoard[combo[2].row][combo[2].column];
-
-      if (
-        firstSquareSymbol &&
-        firstSquareSymbol === secondSquareSymbol &&
-        firstSquareSymbol === thirdSquareSymbol
-      ) {
-        winner = [players[firstSquareSymbol]];
-      }
-    }
-
-    return winner;
-  }
-
   const winner = deriveWinner(gameBoard, players);
 
   const isDraw = gameTurns.length === 9 && !winner;
 
+  //EVENT HANDLERS
   function handleSquareSelection(rowIndex, colIndex) {
     setGameTurns((prevTurns) => {
       const currentPlayer = deriveActivePlayer(prevTurns);
@@ -93,6 +101,7 @@ function App() {
     });
   }
 
+  // RENDER
   return (
     <main>
       <div id="game-container">

@@ -10,6 +10,7 @@ export default function Player({
   const [playerName, setPlayerName] = useState(initialName);
 
   function handleEditClick() {
+    //editing = prevState
     setIsEditing((editing) => !editing);
     if (isEditing) {
       onChangeName(symbol, playerName);
@@ -24,6 +25,7 @@ export default function Player({
 
   if (isEditing) {
     playerNameElement = (
+      //two-way-binding
       <input type="text" required value={playerName} onChange={handleChange} />
     );
   }
